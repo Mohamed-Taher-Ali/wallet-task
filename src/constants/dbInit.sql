@@ -5,6 +5,7 @@ use taskdb;
 create table users(
 id int auto_increment primary key,
 
+role text not null,
 name text not null,
 mobile text not null,
 password text not null,
@@ -24,9 +25,6 @@ amount numeric not null,
 
 createdAt datetime,
 updatedAt datetime
-
-FOREIGN KEY (userId) REFERENCES users(id),
-FOREIGN KEY (transactionId) REFERENCES transactions(id),
 );
 
 

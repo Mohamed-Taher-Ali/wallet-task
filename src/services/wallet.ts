@@ -1,3 +1,4 @@
+import { WalletModel } from './../models/wallet';
 import { throwErrorIf } from './../utils/helpers';
 import { WalletBody } from './../constants/types';
 import { Wallet, WalletAttributes } from "../models/wallet";
@@ -15,8 +16,8 @@ export const addToWallet = async (
     const { error } = addToWalletValidation(walletBody);
     throwErrorIf(!!error, error.details[0].message as any);
 
-    const wallet = await Wallet.create(walletBody);
-    return wallet._attributes;
+    const wallet = await Wallet.create(walletBody as WalletModel);
+    return (wallet.toJSON() as WalletAttributes);
 };
 
 
@@ -32,22 +33,22 @@ export const checkWalletIsSufficient = async (
     });
 
     return amount <= senderWallets.reduce((total, w) =>
-        total + w._attributes.amount, 0
+        total + (w.toJSON() as WalletAttributes).amount, 0
     );
 };
 
 
 export const balanceReport = async (
-    userId: string
+    userId: number
 ): Promise<WalletAttributes[]> => {
 
     const { error } = balanceReportValidation({ userId });
-    throwErrorIf(!!error, error.details[0].message as any);
+    // throwErrorIf(!!error, error.details[0].message as any);
 
     const wallets = await Wallet.findAll({
         where: { userId: Number(userId) || 0 }
     });
 
-    return wallets.map(w => w._attributes);
+    return wallets.map(w => (w.toJSON() as WalletAttributes));
 };
 

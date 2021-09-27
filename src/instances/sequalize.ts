@@ -1,9 +1,10 @@
+import { User } from './../models/user';
 import { Sequelize } from 'sequelize'
 
 const
     db = 'taskdb',
     username = 'root',
-    password = '',
+    password = 'root',
     host = 'localhost';
 
 export const sequelize = new Sequelize(
@@ -17,4 +18,12 @@ export const sequelize = new Sequelize(
     }
 );
 
-sequelize.sync();
+export const runSql = () => {
+    try {
+        sequelize.sync();
+        console.log('db connected succefully ....');
+        return sequelize;
+    } catch (error) {
+        console.log('db failed to connect ....');
+    }
+}

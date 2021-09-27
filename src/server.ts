@@ -2,17 +2,20 @@ import * as bodyParser from 'body-parser'
 import * as express from 'express'
 import * as cors from 'cors'
 
-import { sequelize } from './instances/sequalize'
+import { runSql } from './instances/sequalize';
 import { appRouter } from './routes';
+import { seed } from './utils/seed';
 
 const app = express()
-const port = 5000
+const port = 5000;
+
+runSql(); // run db connection;
+seed(); // seed admin;
 
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cors())
 
-sequelize;
 appRouter(app);
 
 try {

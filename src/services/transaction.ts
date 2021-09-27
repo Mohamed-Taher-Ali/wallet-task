@@ -1,8 +1,9 @@
-import { TransactionAttributes } from './../models/transaction';
+import { WalletAttributes } from './../models/wallet';
+import { TransactionAttributes, TransactionModel } from './../models/transaction';
 import { addToWallet, checkWalletIsSufficient } from "./wallet";
 import { Transaction } from './../models/transaction';
 import { throwErrorIf } from '../utils/helpers';
-import { User } from './../models/user';
+import { User, UserAttributes } from './../models/user';
 import {
     RoleEnum,
     TransactionBody,
@@ -10,46 +11,63 @@ import {
     ErrorMessageEnum,
 } from './../constants/types';
 import { transferToOtherValidation } from './validations';
+import { normalTransaction } from '../utils/transaction';
 
 
-export const transferToOther = async(
+export const transferToOther = async (
     userId: number,
     transactionBody: TransactionBody
-): Promise<TransactionAttributes> => {
+): Promise<WalletAttributes> => {
 
-    const { error } = transferToOtherValidation({userId, ...transactionBody});
-    throwErrorIf(!!error, error.details[0].message as any);
+    const { error } = transferToOtherValidation({ userId, ...transactionBody });
+    // throwErrorIf(!!error, error.details[0].message as any);
 
-    const
-        { amount, receiverMobile } = transactionBody,
-        sender = await User.findByPk(userId);
-    
-    let transactionType = TransactionEnum.APP_TRANSFER;
+    const { amount, receiverMobile } = transactionBody;
 
-    if(sender._attributes.role != RoleEnum.APP){
-        throwErrorIf(
-            await checkWalletIsSufficient(userId, amount),
-            ErrorMessageEnum.NO_SUFFICIENT_WALLET
-        );
-        transactionType = TransactionEnum.USER_TRANSFER;
+    try {
+        const receiver = await User.findOne({
+            where: { mobile: receiverMobile }
+        });
+
+        if ((receiver.toJSON() as UserAttributes).id == userId)
+            return;
+
+        return await normalTransaction(
+            userId,
+            (receiver.toJSON() as UserAttributes).id,
+            amount
+        ) as WalletAttributes;
+        
+    } catch (error) {
+
     }
 
-    const receiver = await User.findOne({
-        where: { mobile: receiverMobile }
-    });
+    // let transactionType = TransactionEnum.APP_TRANSFER;
 
-    const transaction = await Transaction.create({
-        toUserId: receiver._attributes.id,
-        fromUserId: userId,
-        transactionType,
-        amount,
-    });
+    // if((sender.toJSON() as UserAttributes).role != RoleEnum.APP){
+    //     throwErrorIf(
+    //         await checkWalletIsSufficient(userId, amount),
+    //         ErrorMessageEnum.NO_SUFFICIENT_WALLET
+    //     );
+    //     transactionType = TransactionEnum.USER_TRANSFER;
+    // }
 
-    await addToWallet({
-        transactionId: transaction._attributes.id,
-        userId: receiver._attributes.id,
-        amount,
-    });
+    // const receiver = await User.findOne({
+    //     where: { mobile: receiverMobile }
+    // });
 
-    return transaction._attributes;
+    // const transaction = await Transaction.create({
+    //     toUserId: (receiver.toJSON() as UserAttributes).id,
+    //     fromUserId: userId,
+    //     transactionType,
+    //     amount,
+    // } as TransactionModel);
+
+    // await addToWallet({
+    //     transactionId: (transaction.toJSON() as TransactionAttributes).id,
+    //     userId: (receiver.toJSON() as UserAttributes).id,
+    //     amount,
+    // });
+
+    // return transaction.toJSON() as TransactionAttributes;
 };

@@ -7,7 +7,7 @@ export const transactions = Router();
 
 transactions
 
-    .post('transferToOther', [authGuard], async (req: Request, res) => {
-        const result = await transferToOther(req['user']['id'] as any, req.body);
+    .post('/transferToOther', [authGuard], async (req, res) => {
+        const result = await transferToOther(Number(req['user']['id']), req.body);
         res.send(result);
     })

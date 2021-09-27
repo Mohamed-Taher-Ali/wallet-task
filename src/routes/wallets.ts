@@ -9,7 +9,7 @@ export const wallets = Router();
 
 wallets
 
-    .get('balanceReport', [roleGuard(RoleEnum.APP)], async (req: Request, res) => {
-        const result = await balanceReport(req.query.id as any);
+    .get('/balanceReport', [roleGuard(RoleEnum.APP)], async (req: Request, res) => {
+        const result = await balanceReport(Number(req.query.userId as string));
         res.send(result);
     })

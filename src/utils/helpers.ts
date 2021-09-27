@@ -1,21 +1,24 @@
-import { Request } from 'express';
 import * as jwt from 'jsonwebtoken';
+import { Request } from 'express';
 
 import { ErrorMessageEnum, TokenPayload } from './../constants/types';
 
 
 export const throwErrorIf = (
     condition: boolean,
-    message: ErrorMessageEnum
-) => { if (condition) throw Error(message); }
+    message: ErrorMessageEnum,
+    errorCode: number = 401
+) => {
+    // if (condition)
+    // throw Error(message + errorCode);
+}
 
-export const getPayloadFromToken = async (req: Request): Promise<TokenPayload> => {
+export const getPayloadFromToken = async (token: string): Promise<TokenPayload> => {
     const
-        token = req.headers.authorization,
         jwtPayload = await jwt.decode(token, { complete: true }),
         payload = jwtPayload.payload as TokenPayload;
 
-    throwErrorIf(!payload.id, ErrorMessageEnum.UNAUZENTICATED);
+    // throwErrorIf(!payload?.id, ErrorMessageEnum.UNAUZENTICATED, 401);
 
     return payload;
 }

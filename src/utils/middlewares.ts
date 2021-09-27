@@ -1,3 +1,4 @@
+import { UserAttributes } from './../models/user';
 import { NextFunction, Request, Response } from 'express';
 import { User } from '../models/user';
 
@@ -10,9 +11,15 @@ export const authGuard = async (
     res: Response,
     next: NextFunction
 ) => {
-    const payload = getPayloadFromToken(req);
+    try {
+        const payload = await getPayloadFromToken(req.headers.authorization);
+        
+        req.user = {
+            id: payload.id
+        };
+    } catch (error) {
 
-    req.user.id = (await payload).id;
+    }
 
     next();
 }
@@ -23,16 +30,18 @@ export const roleGuard = (...roles: RoleEnum[]) => async (
     next: NextFunction
 ) => {
 
-    const
-    payload = await getPayloadFromToken(req),
-    user = await User.findOne({ where: { id: payload.id } });
+    try {
+        const
+            payload = await getPayloadFromToken(req.headers.authorization),
+            user = await User.findOne({ where: { id: payload.id } });
 
-    req.user.id = (await payload).id;
+        req.user.id = payload.id;
 
-    throwErrorIf(
-        !roles.includes(user._attributes.role),
-        ErrorMessageEnum.UNAUTHORIZED
-    );
+        throwErrorIf(
+            !roles.includes((user.toJSON() as UserAttributes).role),
+            ErrorMessageEnum.UNAUTHORIZED
+        );
+    } catch (error) { }
 
     next();
 }

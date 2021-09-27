@@ -46,5 +46,5 @@ export interface WalletBody {
 
 export interface TransactionBody {
     amount: number;
-    receiverMobile: number;
+    receiverMobile: string;
 }
